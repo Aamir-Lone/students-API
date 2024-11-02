@@ -97,3 +97,49 @@ func (s *Sqlite) GetStudents() ([]types.Student, error) {
 	return students, nil
 
 }
+
+func (s *Sqlite) DeleteStudentById(id int64) error {
+	stmt, err := s.Db.Prepare("DELETE FROM students WHERE id = ?")
+	if err != nil {
+		return fmt.Errorf("failed to prepare delete statement: %w", err)
+	}
+	defer stmt.Close()
+
+	result, err := stmt.Exec(id)
+	if err != nil {
+		return fmt.Errorf("execution error while deleting student: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("failed to retrieve affected rows: %w", err)
+	}
+	if rowsAffected == 0 {
+		return fmt.Errorf("no student found with id %d", id)
+	}
+
+	return nil
+}
+
+func (s *Sqlite) UpdateStudentById(id int64, updatedStudent types.Student) error {
+	stmt, err := s.Db.Prepare("UPDATE students SET name = ?, email = ?, age = ? WHERE id = ?")
+	if err != nil {
+		return fmt.Errorf("failed to prepare update statement: %w", err)
+	}
+	defer stmt.Close()
+
+	result, err := stmt.Exec(updatedStudent.Name, updatedStudent.Email, updatedStudent.Age, id)
+	if err != nil {
+		return fmt.Errorf("execution error while updating student: %w", err)
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("failed to retrieve affected rows: %w", err)
+	}
+	if rowsAffected == 0 {
+		return fmt.Errorf("no student found with id %d", id)
+	}
+
+	return nil
+}

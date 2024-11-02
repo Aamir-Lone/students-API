@@ -17,6 +17,12 @@ import (
 )
 
 func main() {
+
+	dir, err := os.Getwd()
+	if err != nil {
+		log.Fatalf("Error getting current working directory: %s", err)
+	}
+	log.Printf("Current working directory: %s", dir)
 	//fmt.Println("welcome to students-api project")
 	//load config
 	cfg := config.MustLoad()
@@ -35,6 +41,8 @@ func main() {
 	router.HandleFunc("POST /api/students", student.New(storage))
 	router.HandleFunc("GET /api/students/{id}", student.GetById(storage))
 	router.HandleFunc("GET /api/students", student.GetList(storage))
+	router.HandleFunc("DELETE /api/students/{id}", student.Delete(storage))
+	router.HandleFunc("PUT /api/students/{id}", student.Update(storage))
 
 	//setup server
 	server := http.Server{

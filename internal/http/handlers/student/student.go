@@ -96,3 +96,64 @@ func GetList(storage storage.Storage) http.HandlerFunc {
 	}
 
 }
+
+func Delete(storage storage.Storage) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id := r.PathValue("id")
+
+		slog.Info("deleting a student", slog.String("id", id))
+		intId, err := strconv.ParseInt(id, 10, 64)
+		if err != nil {
+			response.WriteJson(w, http.StatusBadRequest, response.GeneralError(fmt.Errorf("invalid ID format: %w", err)))
+			return
+		}
+
+		err = storage.DeleteStudentById(intId)
+		if err != nil {
+			if errors.Is(err, errors.New("record not found")) {
+				slog.Error("student not found", slog.String("id", id))
+				response.WriteJson(w, http.StatusNotFound, response.GeneralError(fmt.Errorf("student with ID %d not found", intId)))
+				return
+			}
+			slog.Error("error deleting student", slog.String("id", id), slog.Any("error", err))
+			response.WriteJson(w, http.StatusInternalServerError, response.GeneralError(fmt.Errorf("failed to delete student: %w", err)))
+			return
+		}
+
+		response.WriteJson(w, http.StatusOK, map[string]string{"message": "student deleted successfully"})
+	}
+}
+func Update(storage storage.Storage) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id := r.PathValue("id")
+
+		slog.Info("updating a student", slog.String("id", id))
+		intId, err := strconv.ParseInt(id, 10, 64)
+		if err != nil {
+			response.WriteJson(w, http.StatusBadRequest, response.GeneralError(fmt.Errorf("invalid ID format: %w", err)))
+			return
+		}
+
+		var updatedStudent types.Student
+		if err := json.NewDecoder(r.Body).Decode(&updatedStudent); err != nil {
+			response.WriteJson(w, http.StatusBadRequest, response.GeneralError(fmt.Errorf("invalid JSON body: %w", err)))
+			return
+		}
+
+		updatedStudent.Id = intId // Ensure the ID is set correctly in the struct
+
+		err = storage.UpdateStudentById(intId, updatedStudent)
+		if err != nil {
+			if errors.Is(err, errors.New("record not found")) {
+				slog.Error("student not found for update", slog.String("id", id))
+				response.WriteJson(w, http.StatusNotFound, response.GeneralError(fmt.Errorf("student with ID %d not found", intId)))
+				return
+			}
+			slog.Error("error updating student", slog.String("id", id), slog.Any("error", err))
+			response.WriteJson(w, http.StatusInternalServerError, response.GeneralError(fmt.Errorf("failed to update student: %w", err)))
+			return
+		}
+
+		response.WriteJson(w, http.StatusOK, map[string]string{"message": "student updated successfully"})
+	}
+}
