@@ -20,9 +20,10 @@ type Config struct {
 func MustLoad() *Config {
 
 	var configPath string
-	defaultConfigPath := "config/local.yaml"
+	defaultConfigPath := "C:/students-API/config/local.yaml"
 
 	configPath = os.Getenv("CONFIG_PATH")
+
 	if configPath == "" {
 		flags := flag.String("config", defaultConfigPath, "path to the configuration file")
 		flag.Parse()
@@ -33,6 +34,9 @@ func MustLoad() *Config {
 		}
 
 	}
+	log.Printf("Looking for config file at: %s", configPath)
+	log.Printf("Using config path: %s", configPath)
+
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
 		log.Fatalf("config file does not exist: %s", configPath)
 
