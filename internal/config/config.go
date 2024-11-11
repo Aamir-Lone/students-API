@@ -20,8 +20,9 @@ type Config struct {
 func MustLoad() *Config {
 
 	var configPath string
-	//defaultConfigPath := "config/local.yaml"
-	defaultConfigPath := "C:/students-API/config/local.yaml"
+	defaultConfigPath := "config/local.yaml"
+	//defaultConfigPath := "C:/students-API/config/local.yaml"
+	//defaultConfigPath := "/app/config/local.yaml"
 
 	configPath = os.Getenv("CONFIG_PATH")
 
